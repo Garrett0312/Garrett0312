@@ -1,0 +1,28 @@
+from datetime import datetime, time
+from time import sleep
+import re
+import os.path
+
+
+def dateDiffInSeconds(date1, date2):
+  timedelta = date2 - date1
+  return timedelta.days * 24 * 3600 + timedelta.seconds
+
+def daysHoursMinutesSecondsFromSeconds(seconds):
+	minutes, seconds = divmod(seconds, 60)
+	hours, minutes = divmod(minutes, 60)
+	days, hours = divmod(hours, 24)
+	return (days, hours, minutes, seconds)
+
+req = datetime.strptime('2021-02-7 00:00:00', '%Y-%m-%d %H:%M:%S') #SuperBowlLV
+now = datetime.now()
+
+while req>now:
+    file = open ('//whbf-tvdc2/DigitalMedia/Custom/ImportedData/EventCountdown.csv', 'w')  #//change path to output location
+    print("%dd, %dh, %dm, %ds" % daysHoursMinutesSecondsFromSeconds(dateDiffInSeconds(now, req)))
+    file.write("%d, %d, %d, %d," % daysHoursMinutesSecondsFromSeconds(dateDiffInSeconds(now, req)))
+    file.close()
+    sleep(30)
+    now = datetime.now()
+
+print("Done")
