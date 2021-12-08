@@ -1,0 +1,29 @@
+import requests
+from time import sleep
+import re
+import csv
+
+while True:
+
+    link = "http://www.spotternetwork.org/pro/feed/58be4e5e8a318/gm.php" #58be4e5e8a318 is the spotter ID
+    f = requests.get(link)
+    e = f.text.split()
+    num = e[2].strip("num=")
+    report = e[4].strip("report_at= ")
+    lat = e[5].strip("lat=")
+    lng = e[6].strip("lng=")
+    
+    num2 = num.strip('"')
+    report2 = report.strip('"')
+    lat2 = lat.strip('"')
+    lng2 = lng.strip('"')
+    print(num2,report2,lat2,lng2)
+
+
+    with open ('//whbf-tvdc2/DigitalMedia/Custom/NavImportedData/LocationTest.csv', 'w') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Num','time','lat','long'])
+        writer.writerow([num2,report2,lat2,lng2])
+        file.close()    
+    
+    sleep(60) #Updates every minute
