@@ -1,37 +1,120 @@
 import requests
+import calendar
+import math
 from bs4 import BeautifulSoup
+from datetime import datetime
+from sys import exit
+import tkinter as tk
+from tkinter import simpledialog
 
-URL = 'https://www.aviationweather.gov/metar/data?ids=kmli&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
+root = tk.Tk()
+
+root.withdraw()
+
+
+stat = simpledialog.askstring(title="Weather",
+                                  prompt="Enter a Wx Station ID")
+stat = str.lower(stat)
+if 'k' in stat:
+    stat=stat
+else:
+    stat = 'k'+stat
+
+
+if len(stat)!=4:
+    print ("Invalid input")
+    exit()
+
+
+URL = 'https://www.aviationweather.gov/metar/data?ids='+stat+'&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
+
+
+#URL = 'https://www.aviationweather.gov/metar/data?ids=kfmn&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
 page = requests.get(URL)
 
 soup = BeautifulSoup(page.content, 'html.parser')
-results = str(soup.find('code'))
-loc = results.find('K')
-loca = str(results[6:10])
+data = str(soup.find('code'))
+results = data[10:1000]
+
+
+#Station ID
+loca = str(data[6:10])
+
+#Type of Observer
+
+if 'AUTO' in results:
+    Auto = 'Automated OBS'
+else:
+    Auto = 'Human OBS'
+
 
 #Time of Obs
 
 TimeS = results.find('Z')-4
 TimeE = results.find('Z')-0
+
+try:
+    int(results[TimeS:TimeE])
+except ValueError:
+    print(str('Invalid Station ID'))
+    exit()
+
+
 TimeRaw = round(int(results[TimeS:TimeE]),-2)
-if TimeRaw <1000:
+
+Time = TimeRaw
+if TimeRaw <=1000:
     Time = (str(TimeRaw).zfill(4))
-print(Time)
-#else:
-#    Time = round(TimeRaw,-2)   
-    
-print(TimeRaw)
+elif TimeRaw == 2400:
+    Time = '0000'
+#Date of Obs
+Date = datetime.today()
+Month = Date.strftime("%B")
+Weekday = calendar.day_name[Date.weekday()]
+Day = int(Date.strftime("%d"))
+
+if Day == 1:
+    prefix = 'st'
+elif Day == 2:
+    prefix = 'nd'
+elif Day == 3:
+    prefix = 'rd'
+elif Day in range(4,21):
+    prefix = 'th'
+elif Day == 21:
+    prefix = 'st'
+elif Day == 22:
+    prefix = 'nd'
+elif Day == 23:
+    prefix = 'rd'
+elif Day in range(24,31):
+    prefix = 'th'
+elif Day == 31:
+    prefix = 'st'
+
+
+day = str(results[1:3])
+
+clocktime = datetime.now()
+hour = int((clocktime.strftime('%H')))
+Min = (clocktime.strftime('%M'))
+
+if hour <12:
+    meridiem = "AM"
+else:
+    meridiem = "PM"
+
 #Pressure
 
 Pstart = results.find('SLP')+3
-Pend = results.find('SLP')+5
+Pend = results.find('SLP')+6
 
-prs = int(results[Pstart:Pend])
+prsraw = int(results[Pstart:Pend])
 
-if prs >500:
-    prs = ((prs*10**-1)+900)
+if prsraw >500:
+    prs = ((prsraw*10**-1)+900)
 else:
-    prs = ((prs*10**-1)+1000)
+    prs = ((prsraw*10**-1)+1000)
 
 #Temperature
 
@@ -57,17 +140,51 @@ else:
 Dew = round((DewC*(9/5)+32))
 CDew = round(DewC)
 
+#Relative Humidity
+TempK = TempC+273
+DewK = DewC+273
+
+e= 6.11*(math.exp((5321.041215)*((1/273)-(1/DewK))))
+es= 6.11*(math.exp((5321.041215)*((1/273)-(1/TempK))))
+Rh = round((e/es)*100)
+
 #Wind Speed
 
-WindSS = results.find('KT')-2
-WindSE = results.find('KT')-0
+if 'AUTO' in results:
+    WindSS = results.find('AUTO')+8
+    WindSE = results.find('AUTO')+10
+else:
+    WindSS = results.find('Z')+5
+    WindSE = results.find('Z')+7
+
 WindSRaw = int(results[WindSS:WindSE])
 WindS = round(WindSRaw*1.15078)
 
+#Wind Gust
+
+GustfindS = results.find('KT')-3
+GustfindE = results.find('KT')-2
+
+GustQ = str(results[GustfindS:GustfindE])
+if 'G' in GustQ:
+    GustS = results.find('G')+1
+    GustE = results.find('G')+3
+    GustRaw = int(results[GustS:GustE])
+    Gust = round(GustRaw*1.15078)
+else:
+    Gust = 'None'
+
+
 #Wind Direction
 
-WindDS = results.find('KT')-5
-WindDE = results.find('KT')-2
+if 'AUTO' in results:
+    WindDS = results.find('AUTO')+5
+    WindDE = results.find('AUTO')+8
+else:
+    WindDS = results.find('Z')+2
+    WindDE = results.find('Z')+5
+
+
 
 while True:
     try:
@@ -122,16 +239,62 @@ VisS = results.find('SM')-2
 VisE = results.find('SM')-0
 Vis = int(results[VisS:VisE])
 
+#Sky
+
+skyS = results.find('SM')+3
+skyE = results.find('SM')+6
+skyRaw = str(results[skyS:skyE])
+
+if skyRaw == 'CLR':
+    sky = 'Clear Skies'
+elif skyRaw == 'FEW':
+    sky = "Partly Cloudy"
+elif skyRaw == 'SCT':
+    sky = "Scattered Clouds"
+elif skyRaw == 'BKN':
+    sky = "Broken Clouds"
+elif skyRaw == 'OVC':
+    sky = "Overcast Skies"
+
+celS = results.find('SM')+6
+celE = results.find('SM')+10
+if skyRaw == 'CLR':
+    celR = 0
+else:
+    celR = int(results[celS:celE])
+    if celR <100:
+        celh = celR*100
+        cel = 'A'
+    else:
+        cel = celR/10
+        celh = 'A'
+
 #Print METAR
 
+print("")
+print("Local Time:",'%d:%s'%(hour,Min),meridiem, Weekday,Month,'%d%s'%(Day,prefix))
+print("")
 print("Site:",loca)
-print("Time:",'%sZ' %Time)
+print("")
+if celR == 0:
+    print("Sky:", sky)
+elif celh == 'A':
+    print("Sky:", sky, "at", '%dkft' %cel)
+elif cel == 'A':
+    print("Sky:", sky, "at", '%dft' %celh)
 print("Temp:",'%d\N{DEGREE SIGN}' "F" %Temp, '(%d\N{DEGREE SIGN}C)' %CTemp)
 print("DewPt:",'%d\N{DEGREE SIGN}' "F" %Dew,'(%d\N{DEGREE SIGN}C)' %CDew)
+print("Humidity:",'%d%%' %Rh)
 print("Wind:", WindD, '%d MPH' %WindS)
+if Gust == 'None':
+    print("Gusts:", "None Observed")
+else:
+    print("Gusts:",Gust, "MPH")
 print("SLP:",prs,"mb")
 print("Vis:", Vis, "Miles")
+print("")
+print("Updated:",Month,day,'%s Z' %Time)
+print("Report Type:",Auto)
+print("")
 
-print(TimeRaw)
-
-print(results)
+#print(results)
