@@ -7,11 +7,9 @@ from sys import exit
 import tkinter as tk
 from tkinter import simpledialog
 
-root = tk.Tk()
+popup = tk.Tk()
 
-root.withdraw()
-
-
+popup.withdraw()
 stat = simpledialog.askstring(title="Weather",
                                   prompt="Enter a Wx Station ID")
 stat = str.lower(stat)
@@ -20,16 +18,11 @@ if 'k' in stat:
 else:
     stat = 'k'+stat
 
-
 if len(stat)!=4:
     print ("Invalid input")
     exit()
 
-
 URL = 'https://www.aviationweather.gov/metar/data?ids='+stat+'&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
-
-
-#URL = 'https://www.aviationweather.gov/metar/data?ids=kfmn&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
 page = requests.get(URL)
 
 soup = BeautifulSoup(page.content, 'html.parser')
