@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-URL = 'https://www.aviationweather.gov/metar/data?ids=kord&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
+URL = 'https://www.aviationweather.gov/metar/data?ids=kmli&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
 page = requests.get(URL)
 
 soup = BeautifulSoup(page.content, 'html.parser')
@@ -13,9 +13,14 @@ loca = str(results[6:10])
 
 TimeS = results.find('Z')-4
 TimeE = results.find('Z')-0
-TimeRaw = int(results[TimeS:TimeE])
-Time = round(TimeRaw,-2)
-
+TimeRaw = round(int(results[TimeS:TimeE]),-2)
+if TimeRaw <1000:
+    Time = (str(TimeRaw).zfill(4))
+print(Time)
+#else:
+#    Time = round(TimeRaw,-2)   
+    
+print(TimeRaw)
 #Pressure
 
 Pstart = results.find('SLP')+3
@@ -120,13 +125,13 @@ Vis = int(results[VisS:VisE])
 #Print METAR
 
 print("Site:",loca)
-print("Time:",'%dZ' %Time)
+print("Time:",'%sZ' %Time)
 print("Temp:",'%d\N{DEGREE SIGN}' "F" %Temp, '(%d\N{DEGREE SIGN}C)' %CTemp)
 print("DewPt:",'%d\N{DEGREE SIGN}' "F" %Dew,'(%d\N{DEGREE SIGN}C)' %CDew)
 print("Wind:", WindD, '%d MPH' %WindS)
 print("SLP:",prs,"mb")
 print("Vis:", Vis, "Miles")
 
-
+print(TimeRaw)
 
 print(results)
