@@ -10,25 +10,36 @@ from tkinter import simpledialog
 popup = tk.Tk()
 
 popup.withdraw()
+
+
 stat = simpledialog.askstring(title="Weather",
                                   prompt="Enter a Wx Station ID")
 stat = str.lower(stat)
-if 'k' in stat:
+if len(stat)==4:
     stat=stat
 else:
     stat = 'k'+stat
+
 
 if len(stat)!=4:
     print ("Invalid input")
     exit()
 
 URL = 'https://www.aviationweather.gov/metar/data?ids='+stat+'&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
+
 page = requests.get(URL)
 
 soup = BeautifulSoup(page.content, 'html.parser')
 data = str(soup.find('code'))
 results = data[10:1000]
+resultsnew = data[(results.find('RMK')):1000]
+if 'AUTO' in results:
+    resnoday = results[14:1000]
+else:
+    resnoday = results[9:1000]
 
+#print(resnoday)
+#print(results)
 
 #Station ID
 loca = str(data[6:10])
@@ -90,6 +101,8 @@ day = str(results[1:3])
 
 clocktime = datetime.now()
 hour = int((clocktime.strftime('%H')))
+if hour >12:
+    hr = hour-12
 Min = (clocktime.strftime('%M'))
 
 if hour <12:
@@ -111,9 +124,11 @@ else:
 
 #Temperature
 
-TempS = results.find('SLP')+8
-TempE = results.find('SLP')+12
-TempRaw = int(results[TempS:TempE])
+TempS = resultsnew.find('T')+1
+TempE = resultsnew.find('T')+5
+#print(resultsnew[TempS:TempE])
+
+TempRaw = int(resultsnew[TempS:TempE])
 if TempRaw <1000:
     TempC=(TempRaw/10)
 else:
@@ -123,9 +138,9 @@ CTemp = round(TempC)
 
 #Dew Point
 
-DewS = results.find('SLP')+12
-DewE = results.find('SLP')+16
-DewRaw = int(results[DewS:DewE])
+DewS = resultsnew.find('T')+5
+DewE = resultsnew.find('T')+9
+DewRaw = int(resultsnew[DewS:DewE])
 if DewRaw <1000:
     DewC=(DewRaw/10)
 else:
@@ -143,26 +158,21 @@ Rh = round((e/es)*100)
 
 #Wind Speed
 
-if 'AUTO' in results:
-    WindSS = results.find('AUTO')+8
-    WindSE = results.find('AUTO')+10
-else:
-    WindSS = results.find('Z')+5
-    WindSE = results.find('Z')+7
+wspeed = int(resnoday[3:5])
 
-WindSRaw = int(results[WindSS:WindSE])
+WindSRaw = wspeed
 WindS = round(WindSRaw*1.15078)
 
 #Wind Gust
 
-GustfindS = results.find('KT')-3
-GustfindE = results.find('KT')-2
+GustfindS = resnoday.find('KT')-3
+GustfindE = resnoday.find('KT')-2
 
-GustQ = str(results[GustfindS:GustfindE])
+GustQ = str(resnoday[GustfindS:GustfindE])
 if 'G' in GustQ:
-    GustS = results.find('G')+1
-    GustE = results.find('G')+3
-    GustRaw = int(results[GustS:GustE])
+    GustS = resnoday.find('G')+1
+    GustE = resnoday.find('G')+3
+    GustRaw = int(resnoday[GustS:GustE])
     Gust = round(GustRaw*1.15078)
 else:
     Gust = 'None'
@@ -170,18 +180,12 @@ else:
 
 #Wind Direction
 
-if 'AUTO' in results:
-    WindDS = results.find('AUTO')+5
-    WindDE = results.find('AUTO')+8
-else:
-    WindDS = results.find('Z')+2
-    WindDE = results.find('Z')+5
-
+Dir = int(resnoday[0:3])
 
 
 while True:
     try:
-        WindDRaw = int(results[WindDS:WindDE])
+        WindDRaw = Dir
         #WindDRaw = int('VRB')
     except ValueError:
         WindD = "Variable"
@@ -189,42 +193,66 @@ while True:
 
 
 
-    if WindDRaw in range(0,10):#North
+    if WindDRaw in range(0,11):#North
         WindD = "N"
-    elif WindDRaw in range(11,34):#NNE
+    elif WindDRaw in range(11,35):#NNE
             WindD = "NNE"
-    elif WindDRaw in range(35,55):#NE
+    elif WindDRaw in range(35,56):#NE
             WindD = "NE"
-    elif WindDRaw in range(56,79):#ENE
+    elif WindDRaw in range(56,80):#ENE
             WindD = "ENE"
-    elif WindDRaw in range(80,100):#East
+    elif WindDRaw in range(80,101):#East
             WindD = "E"
-    elif WindDRaw in range(101,124):#ESE
+    elif WindDRaw in range(101,125):#ESE
             WindD = "ESE"
-    elif WindDRaw in range(125,145):#SE
+    elif WindDRaw in range(125,146):#SE
             WindD = "SE"
-    elif WindDRaw in range(146,169):#SSE
+    elif WindDRaw in range(146,170):#SSE
             WindD = "SSE"
-    elif WindDRaw in range(170,190):#South
+    elif WindDRaw in range(170,191):#South
             WindD = "S"
-    elif WindDRaw in range(191,214):#SSW
+    elif WindDRaw in range(191,215):#SSW
             WindD = "SSW"
-    elif WindDRaw in range(215,235):#SW
+    elif WindDRaw in range(215,236):#SW
             WindD = "SW"
-    elif WindDRaw in range(236,259):#WSW
+    elif WindDRaw in range(236,260):#WSW
             WindD = "WSW"
-    elif WindDRaw in range(260,280):#West
+    elif WindDRaw in range(260,281):#West
             WindD = "W"
-    elif WindDRaw in range(281,304):#WNW
+    elif WindDRaw in range(281,305):#WNW
             WindD = "WNW"
-    elif WindDRaw in range(305,325):#NW
+    elif WindDRaw in range(305,326):#NW
             WindD = "NW"
-    elif WindDRaw in range(326,349):#NNW
+    elif WindDRaw in range(326,350):#NNW
             WindD = "NNW"
-    elif WindDRaw in range(350,360):#North
+    elif WindDRaw in range(350,361):#North
             WindD = "N"
     break
 
+#Feel Like Temps
+FeelC=0
+if Temp >= 50 and Dew <50:
+    Feel = Temp
+elif Temp <50:#WindChill
+    Feel = round(35.74 + (0.6215*Temp)-(35.74*WindS**0.16)+(0.4275*Temp*WindS**0.16))
+elif Dew >=60:#Heat Index
+    HI = ((-42.379) + (2.04901523*Temp) + (10.14333127*Rh) - 
+          (0.22475541*Temp*Rh)-(0.00683783*Temp*Temp)-
+          (0.05481717*Rh*Rh)+(0.00122874*Temp*Temp*Rh)+
+          (0.00085282*Temp*Rh*Rh)-(0.00000199*Temp*Temp*Rh*Rh))
+    if HI < 80:
+        HI = 0.5*(Temp+61+((Temp-68)*1.2)+(Rh*0.094))
+        print('It aint that bad')
+    elif Rh<13 and Temp in range (80,113):
+        HI -((13-Rh)/4)*(math.sqrt((17-(abs(Temp-95)))/17))
+        print('Just a Dry Heat')
+    elif Rh>85 and Temp in range (80,88):
+        HI + (((Rh-85)/10)*((87-Temp)/5))
+        print('MUGGY AS FUCK')
+    else:
+        print('Its Humid As Fuck BOI!')
+        Feel=round(HI)
+FeelC = (((Feel-32)*(5/9)))
 
 #Visibility
 
@@ -256,26 +284,33 @@ if skyRaw == 'CLR':
 else:
     celR = int(results[celS:celE])
     if celR <100:
-        celh = celR*100
-        cel = 'A'
+        cel = celR*100
+
     else:
         cel = celR/10
-        celh = 'A'
+
 
 #Print METAR
 
+#print("___________________________________________________")
+#print(results)
+#print("___________________________________________________")
+#print("")
+print("___________________________________________________")
+print("___________________________________________________")
 print("")
-print("Local Time:",'%d:%s'%(hour,Min),meridiem, Weekday,Month,'%d%s'%(Day,prefix))
+print("Local Time:",'%d:%s'%(hr,Min),meridiem, Weekday,Month,'%d%s'%(Day,prefix))
 print("")
 print("Site:",loca)
 print("")
 if celR == 0:
     print("Sky:", sky)
-elif celh == 'A':
+elif cel <1000:
     print("Sky:", sky, "at", '%dkft' %cel)
-elif cel == 'A':
-    print("Sky:", sky, "at", '%dft' %celh)
+else:
+    print("Sky:", sky, "at", '%dft' %cel)
 print("Temp:",'%d\N{DEGREE SIGN}' "F" %Temp, '(%d\N{DEGREE SIGN}C)' %CTemp)
+print("Feels Like:",'%d\N{DEGREE SIGN}' "F" %Feel, '(%d\N{DEGREE SIGN}C)' %FeelC)
 print("DewPt:",'%d\N{DEGREE SIGN}' "F" %Dew,'(%d\N{DEGREE SIGN}C)' %CDew)
 print("Humidity:",'%d%%' %Rh)
 print("Wind:", WindD, '%d MPH' %WindS)
@@ -288,6 +323,9 @@ print("Vis:", Vis, "Miles")
 print("")
 print("Updated:",Month,day,'%s Z' %Time)
 print("Report Type:",Auto)
+print("___________________________________________________")
+print("___________________________________________________")
 print("")
 
 #print(results)
+#Add feel like temps (Wind Chill starts at 45, and heat index at dew over 60)
