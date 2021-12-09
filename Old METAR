@@ -1,0 +1,113 @@
+import requests
+from bs4 import BeautifulSoup
+from time import sleep
+import csv
+
+while True:
+    
+
+    URL = 'https://www.aviationweather.gov/metar/data?ids=kdvn&format=raw&hours=0&taf=on&layout=on'#Change IDS for side reading
+    page = requests.get(URL)
+    
+    
+    soup = BeautifulSoup(page.content, 'html.parser')
+    results = str(soup.find('code'))
+    #Site ID
+    loc = results[6:10]
+    
+    
+    #Temperature
+    Ts = results.find('/')-2
+    Te = results.find('/')-0
+    temp = round(((int((results[Ts:Te])))*1.8)+32,0)
+    
+    
+    #Dew Point
+    Ds = results.find('/')+1
+    De = results.find('/')+3
+    dpt = round(((int((results[Ds:De])))*1.8)+32,0)
+    
+    
+    #Wind Direction
+    if 'AUTO' in results:
+        ds = results.find('AUTO')+5
+        de = results.find('AUTO')+8
+    else:
+        ds = results.find('Z')+2
+        de = results.find('Z')+5
+        
+    WindD = int(results[ds:de])
+    #Dir = 'A'
+    if WindD in range(0,6):
+            Dir = 'N'
+    elif WindD in range(6,40):
+            Dir = 'NNE'
+    elif WindD in range(40,51):
+            Dir = 'NE'
+    elif WindD in range(51,85):
+            Dir = 'ENE'
+    elif WindD in range(85,96):
+            Dir = 'E'
+    elif WindD in range(96,130):
+            Dir = 'ESE'
+    elif WindD in range(130,141):
+            Dir = 'SE'
+    elif WindD in range(141,175):
+            Dir = 'SSE'
+    elif WindD in range(175,186):
+            Dir = 'S'
+    elif WindD in range(186,220):
+            Dir = 'SSW'
+    elif WindD in range(220,231):
+            Dir = 'SW'
+    elif WindD in range(231,265):
+            Dir = 'WSW'
+    elif WindD in range(265,276):
+            Dir = 'W'
+    elif WindD in range(276,310):
+            Dir = 'WNW'
+    elif WindD in range(310,321):
+            Dir = 'NW'
+    elif WindD in range(321,355):
+            Dir = 'NNW'
+    elif WindD in range(355,361):
+            Dir = 'N'
+    
+    #Wind Speed
+    if 'AUTO' in results:
+        ws = results.find('AUTO')+8
+        we = results.find('AUTO')+10
+    else:
+        ws = results.find('Z')+5
+        we = results.find('Z')+7
+    
+    WindS = round(int(results[ws:we])*1.151,0)
+    
+    #Pressure
+    start = results.find('/')+5
+    end = results.find('/')+9
+    prs = round((int(results[start:end])*10**-2)*33.863886667,1)
+    
+    #Visibility
+    vs = results.find('SM')-2
+    ve = results.find('SM')-0
+    Vis = int(results[vs:ve])
+    
+    
+    print("")
+    print("Site:",loc)
+    print("Temp:",temp,u'\u2109')
+    print("Dew:",dpt,u'\u2109')
+    print("Winds:",WindS,"mph",Dir)
+    print("SLP:",prs,"mb")
+    print("Vis:",Vis,"Miles")
+    print("________________________")
+    
+    
+    with open ('C:\\Users\gphey\Desktop\Programs\METAR.csv', 'w') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Site','Temp','Dew','Wind','Direction','Prs','Vis'])
+        writer.writerow([loc,temp,dpt,WindS,Dir,prs,Vis])
+        file.close()    
+    
+    sleep(300)
