@@ -1,0 +1,258 @@
+import requests
+import calendar
+import math
+from bs4 import BeautifulSoup
+from datetime import datetime
+from sys import exit
+import tkinter as tk
+import re
+
+
+#popup = tk.Tk()
+#popup.withdraw()
+#popup.lift()
+
+#WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
+#City = tk.simpledialog.askstring("Local Forecast City", "Enter a city for the forecast for the area. \t\t\t\t\t\t\t")
+#City = City.capitalize()
+WFO = 'dvn'
+City = 'Davenport'
+#URL = ('https://forecast.weather.gov/product.php?issuedby='+WFO+'&product=PFM&site='+WFO)
+#URL = ('https://forecast.weather.gov/product.php?issuedby=DVN&product=PFM&site=dvn')
+#Past Version
+URL = ('https://forecast.weather.gov/product.php?site=DVN&issuedby=DVN&product=PFM&format=CI&version=4&glossary=0')
+
+page = requests.get(URL)
+soup = BeautifulSoup(page.content, 'html.parser')
+data = str(soup)
+#WFO = str(WFO.upper())
+
+#while True:
+#    if City not in data:
+#        print("That location is not in the list, use the major city in your county")
+#        City = tk.simpledialog.askstring("Location not in list", "Please use a major city in your county\t\t\t\t\t\t\t")
+#        City = City.capitalize()
+#    else:
+#        break
+start = data.find(City)
+end = data.find('$',start+1)
+txt = data[start:end]
+print(txt)
+
+#TimeCheck
+times = (txt[(txt.find('CST 3hrly')):(txt.find('UTC'))]).split()
+time = list(map(int,(times[2:len(times)])))
+#print(time)
+
+#Hourly to 12 hour time
+hr = (txt[(txt.find('ft'))+2:(txt.find('CST'))-4])
+apm = txt[txt.find('CST')-3:txt.find('CST')-1]
+hr = round(int(hr),)
+#print (hr)
+h = int(str(hr)[-2:])
+#print(h)
+if h > 30:
+    hr = round((hr/100),)
+else:
+    hr = round(hr/100,)
+#print (hr)
+#hr = (round(int(hr)/100,))
+if apm == 'PM':
+    if hr == 12:
+        hr = hr
+        hour = hr
+    else:
+        hr = hr+12
+        hour = hr-12
+else:
+    if hr == 12:
+        hr = hr
+        hour = 12
+        apm = 'PM'
+        hround = 12
+    elif hr == 13:
+        hr = 1
+        hour = hr
+    else:
+        hr = hr
+        hour = hr
+
+
+if hr in range(1,4):
+    hround = 3
+if hr in range(4,7):
+    hround = 6
+if hr in range(7,10):
+    hround = 9
+if hr in range(10,13):
+    hround = 12
+if hr in range(13,16):
+    hround = 15
+if hr in range(16,19):
+    hround = 18
+if hr in range(19,22):
+    hround = 21
+if hr in range(22,25):
+    hround = 0
+#print(hround)
+
+if (hround in range(0,6)):
+    tod1 = "Tonight"
+    tod2 = "Tomorrow"
+    hl1 = "low"
+    hl2 = "high"
+    #print("True")
+elif hround in range(18,25):
+    tod1 = "Tonight"
+    tod2 = "Tomorrow"
+    hl1 = 'low'
+    hl2 = 'high'
+    #print ("True")
+else:
+    #print("False")
+    tod1 = "Today"
+    tod2 = "Tonight"
+    hl1 = "high"
+    hl2 = 'low'
+#print(time)
+
+
+timenowcut = time.index(hround)
+timenow = time[timenowcut:]
+#print (timenow)
+
+if hround in range (0,6):
+    timeline = timenow.index(6,0,len(timenow))
+elif hround in range(17,25):
+    timeline = timenow.index(6,0,len(timenow))
+else:
+    timeline = timenow.index(18,0,len(timenow))
+#print(timeline)
+timeline12 = timeline+4
+timenow12 = timenow[timeline12]
+#print(timeline12)
+
+
+#State Find
+statefind = (txt[(txt.find('Elev.'))-18:(txt.find('Elev.'))-16])
+#print(statefind)
+
+#Max/Min Temps
+txtshort = (txt[txt.find(City):txt.find('Temp')])
+#print(txtshort)
+
+minmax=''
+if "Min/Max" in txtshort:
+    minmax = (txtshort[txtshort.find('Min/Max'):txtshort.find('Temp')]).split()
+    #print("Min Max")
+if "Max/Min" in txtshort:
+    minmax = (txtshort[txtshort.find('Max/Min'):txtshort.find('Temp')]).split()
+    #print("Max Min")
+
+txn1 = int(minmax[1])
+txn2 = int(minmax[2])
+
+#Wind Direction and Speed
+windd = (txt[(txt.find('Wind dir')):txt.find('Wind spd')]).split()
+winddir = windd[2:]
+winds = (txt[txt.find('Wind spd'):txt.find('Clouds')]).split()
+windspd = winds[2:]
+#print(winddir)
+#print(windspd)
+#Cloud Cover
+cloud = (txt[txt.find('Clouds'):txt.find('PoP 12hr')]).split()
+cloud1 = cloud[timeline]
+cloud2 = cloud[timeline12]
+
+if cloud1 == 'CL':
+    if hr in range(0,6):
+        cloud1 = 'Clear'
+    elif hr in range(18,25):
+        cloud1 = 'Clear'
+    else:
+        cloud1 = 'Sunny'
+elif cloud1 == 'FW':
+    if hr in range(0,6):
+        cloud1 = 'Mostly Clear'
+    elif hr in range(18,25):
+        cloud1 = 'Mostly Clear'
+    else:
+        cloud1 = 'Mostly Sunny'
+elif cloud1 == 'SC':
+    cloud1 = "Partly Cloudy"
+elif cloud1 == 'B1':
+    if hr in range(0,6):
+        cloud1 = 'Partly Clear'
+    elif hr in range(18,25):
+        cloud1 = 'Partly Clear'
+    else:
+        cloud1 = 'Partly Sunny'
+elif cloud1 == 'B2':
+    cloud1 = "Mostly Cloudy"
+elif cloud1 == 'OV':
+    cloud1 == 'Cloudy'
+
+if cloud2 == 'CL':
+    if timenow12 in range(0,6):
+        cloud2 = 'Clear'
+    elif timenow12 in range(18,25):
+        cloud2 = 'Clear'
+    else:
+        cloud2 = 'Sunny'
+elif cloud2 == 'FW':
+    if timenow12 in range(0,6):
+        cloud2 = 'Mostly Clear'
+    elif timenow12 in range(18,25):
+        cloud2 = 'Mostly Clear'
+    else:
+        cloud2 = 'Mostly Sunny'
+elif cloud2 == 'SC':
+    cloud2 = "Partly Cloudy"
+elif cloud2 == 'B1':
+    if timenow12 in range(0,6):
+        cloud2 = 'Partly Clear'
+    elif timenow12 in range(18,25):
+        cloud2 = 'Partly Clear'
+    else:
+        cloud2 = 'Partly Sunny'
+elif cloud2 == 'B2':
+    cloud2 = "Mostly Cloudy"
+elif cloud2 == 'OV':
+    cloud2 = 'Cloudy'
+
+
+
+#Chance of rain
+pop = (txt[(txt.find('PoP 12hr')):(txt.find('QPF 12hr'))]).split()
+
+
+
+#Temps 3 hours
+hourly = (txt[(txt.find('Temp')):(txt.find('Dewpt'))]).split()
+
+
+#Print the Forcast
+print("Area forecast for",'%s'","%City, statefind)
+print("Forecasting Office:",WFO.upper())
+print("Updated at", hour, apm)
+print("")
+
+print("Forecast for",'%s'":"%tod1)
+print(cloud1,"Skies")
+print("with a", hl1, "of",'%d\N{DEGREE SIGN}' "F" %txn1)
+print("Winds",winddir[timeline],"at",windspd[timeline],"MPH")
+print("Chance of precip:",'%s%%' %pop[2])
+print("")
+print('%s'":"%tod2)
+print(cloud2,"Skies")
+print("with a", hl2,"of",'%d\N{DEGREE SIGN}' "F" %txn2)
+print("Winds",winddir[timeline12],"at", windspd[timeline12], "MPH")
+print("Chance of precip:",'%s%%' %pop[3])
+print("")
+print("Here are the conditions for the next 3 hours:")
+print('%s\N{DEGREE SIGN}' "F" %hourly[1],'%s\N{DEGREE SIGN}' "F" %hourly[2],
+      '%s\N{DEGREE SIGN}' "F" %hourly[3])
+
+#print(hr)
+
+#To fix winds find a way to grab wind and cloud conditions only at the 18 and 06 hours
