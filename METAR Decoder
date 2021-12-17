@@ -5,15 +5,15 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from sys import exit
 import tkinter as tk
-from tkinter import simpledialog
 
 popup = tk.Tk()
 
 popup.withdraw()
+popup.lift()
+
+stat = tk.simpledialog.askstring("ASOS/AWOS Weather Data","Enter a station ID to get weather data.\t\t\t")
 
 
-stat = simpledialog.askstring(title="Weather",
-                                  prompt="Enter a Wx Station ID")
 stat = str.lower(stat)
 if len(stat)==4:
     stat=stat
@@ -103,6 +103,8 @@ clocktime = datetime.now()
 hour = int((clocktime.strftime('%H')))
 if hour >12:
     hr = hour-12
+else:
+    hr = hour
 Min = (clocktime.strftime('%M'))
 
 if hour <12:
@@ -328,4 +330,3 @@ print("___________________________________________________")
 print("")
 
 #print(results)
-#Add feel like temps (Wind Chill starts at 45, and heat index at dew over 60)
