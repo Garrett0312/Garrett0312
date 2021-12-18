@@ -18,9 +18,9 @@ import re
 WFO = 'dvn'
 City = 'Davenport'
 #URL = ('https://forecast.weather.gov/product.php?issuedby='+WFO+'&product=PFM&site='+WFO)
-#URL = ('https://forecast.weather.gov/product.php?issuedby=DVN&product=PFM&site=dvn')
+URL = ('https://forecast.weather.gov/product.php?issuedby=DVN&product=PFM&site=dvn')
 #Past Version
-URL = ('https://forecast.weather.gov/product.php?site=DVN&issuedby=DVN&product=PFM&format=CI&version=4&glossary=0')
+#URL = ('https://forecast.weather.gov/product.php?site=DVN&issuedby=DVN&product=PFM&format=CI&version=2&glossary=0')
 
 page = requests.get(URL)
 soup = BeautifulSoup(page.content, 'html.parser')
@@ -44,6 +44,7 @@ times = (txt[(txt.find('CST 3hrly')):(txt.find('UTC'))]).split()
 time = list(map(int,(times[2:len(times)])))
 #print(time)
 
+
 #Hourly to 12 hour time
 hr = (txt[(txt.find('ft'))+2:(txt.find('CST'))-4])
 apm = txt[txt.find('CST')-3:txt.find('CST')-1]
@@ -52,11 +53,12 @@ hr = round(int(hr),)
 h = int(str(hr)[-2:])
 #print(h)
 if h > 30:
-    hr = round((hr/100),)
+    hr = round((hr/100)+1,)
+#    print(hr)
 else:
     hr = round(hr/100,)
 #print (hr)
-#hr = (round(int(hr)/100,))
+
 if apm == 'PM':
     if hr == 12:
         hr = hr
@@ -76,7 +78,7 @@ else:
     else:
         hr = hr
         hour = hr
-
+#print(hr)
 
 if hr in range(1,4):
     hround = 3
@@ -102,7 +104,7 @@ if (hround in range(0,6)):
     hl1 = "low"
     hl2 = "high"
     #print("True")
-elif hround in range(18,25):
+elif hround in range(15,25):
     tod1 = "Tonight"
     tod2 = "Tomorrow"
     hl1 = 'low'
@@ -118,12 +120,12 @@ else:
 
 
 timenowcut = time.index(hround)
-timenow = time[timenowcut:]
-#print (timenow)
+timenow = (time[timenowcut:])
+print (timenow)
 
 if hround in range (0,6):
     timeline = timenow.index(6,0,len(timenow))
-elif hround in range(17,25):
+elif hround in range(15,25):
     timeline = timenow.index(6,0,len(timenow))
 else:
     timeline = timenow.index(18,0,len(timenow))
@@ -131,6 +133,73 @@ else:
 timeline12 = timeline+4
 timenow12 = timenow[timeline12]
 #print(timeline12)
+
+#TimeCorrection
+hr1 = timenow[1]
+hr2 = timenow[2]
+hr3 = timenow[3]
+
+for i in timenow:
+#    hr1 = (timenow[1], hrap)
+#    hr2 = (timenow[2], hrap)
+#    hr3 = (timenow[3], hrap)
+    
+    if i == 0:
+        i = i+12
+        hrap = 'AM'
+        #print(hr1,hr2,hr3)
+    if i in range(1,13):
+        i = i
+        hrap = 'AM'
+        #print(hr1,hr2,hr3)
+    if i in range(15,22):
+        i = i-12
+        hrap = 'PM'
+       #print(hr1,hr2,hr3)
+    hr1 = (timenow[1], i)
+    hr2 = (timenow[2], i)
+    hr3 = (timenow[3], i)
+    break
+print(hr1)
+print(hr2)
+print(hr3)
+
+#if hr1 < 12:
+#    hrap1 = 'AM'
+#else:
+#    hrap1 = 'PM'
+#if hr2 < 12:
+#    hrap2 = 'AM'
+#else:
+#    hrap2 = 'PM'
+#if hr3 < 12:
+#    hrap3 = 'AM'
+#else:
+#    hrap3 = 'PM'
+
+#print(hr1, hrap1)
+#print(hr2, hrap2)
+#print(hr3, hrap3)
+
+#i = 0
+#for i in timenow:
+#    if i == 0:
+#        tcorrect = i+12
+#    if i == 3:
+#        tcorrect = i
+#    if i == 6:
+#        tcorrect = i
+#    if i == 9:
+#        tcorrect = i
+#    if i == 12:
+#        tcorrect = i
+#    if i == 15:
+#        tcorrect = i-12
+#    if i == 18:
+#        tcorrect = i-12
+#    if i == 21:
+#        tcorrect = i-12
+#    break
 
 
 #State Find
@@ -159,22 +228,25 @@ winds = (txt[txt.find('Wind spd'):txt.find('Clouds')]).split()
 windspd = winds[2:]
 #print(winddir)
 #print(windspd)
+
 #Cloud Cover
-cloud = (txt[txt.find('Clouds'):txt.find('PoP 12hr')]).split()
+cloudgrab = (txt[txt.find('Clouds'):txt.find('PoP 12hr')]).split()
+cloud = cloudgrab[1:]
 cloud1 = cloud[timeline]
 cloud2 = cloud[timeline12]
+
 
 if cloud1 == 'CL':
     if hr in range(0,6):
         cloud1 = 'Clear'
-    elif hr in range(18,25):
+    elif hr in range(15,25):
         cloud1 = 'Clear'
     else:
         cloud1 = 'Sunny'
 elif cloud1 == 'FW':
     if hr in range(0,6):
         cloud1 = 'Mostly Clear'
-    elif hr in range(18,25):
+    elif hr in range(15,25):
         cloud1 = 'Mostly Clear'
     else:
         cloud1 = 'Mostly Sunny'
@@ -183,26 +255,26 @@ elif cloud1 == 'SC':
 elif cloud1 == 'B1':
     if hr in range(0,6):
         cloud1 = 'Partly Clear'
-    elif hr in range(18,25):
+    elif hr in range(15,25):
         cloud1 = 'Partly Clear'
     else:
         cloud1 = 'Partly Sunny'
 elif cloud1 == 'B2':
     cloud1 = "Mostly Cloudy"
 elif cloud1 == 'OV':
-    cloud1 == 'Cloudy'
+    cloud1 = 'Cloudy'
 
 if cloud2 == 'CL':
     if timenow12 in range(0,6):
         cloud2 = 'Clear'
-    elif timenow12 in range(18,25):
+    elif timenow12 in range(15,25):
         cloud2 = 'Clear'
     else:
         cloud2 = 'Sunny'
 elif cloud2 == 'FW':
     if timenow12 in range(0,6):
         cloud2 = 'Mostly Clear'
-    elif timenow12 in range(18,25):
+    elif timenow12 in range(15,25):
         cloud2 = 'Mostly Clear'
     else:
         cloud2 = 'Mostly Sunny'
@@ -211,7 +283,7 @@ elif cloud2 == 'SC':
 elif cloud2 == 'B1':
     if timenow12 in range(0,6):
         cloud2 = 'Partly Clear'
-    elif timenow12 in range(18,25):
+    elif timenow12 in range(15,25):
         cloud2 = 'Partly Clear'
     else:
         cloud2 = 'Partly Sunny'
@@ -228,8 +300,9 @@ pop = (txt[(txt.find('PoP 12hr')):(txt.find('QPF 12hr'))]).split()
 
 
 #Temps 3 hours
-hourly = (txt[(txt.find('Temp')):(txt.find('Dewpt'))]).split()
-
+hourlygrab = (txt[(txt.find('Temp')):(txt.find('Dewpt'))]).split()
+hourly = hourlygrab[1:]
+#print(hourly)
 
 #Print the Forcast
 print("Area forecast for",'%s'","%City, statefind)
@@ -250,9 +323,9 @@ print("Winds",winddir[timeline12],"at", windspd[timeline12], "MPH")
 print("Chance of precip:",'%s%%' %pop[3])
 print("")
 print("Here are the conditions for the next 3 hours:")
+print("")
 print('%s\N{DEGREE SIGN}' "F" %hourly[1],'%s\N{DEGREE SIGN}' "F" %hourly[2],
       '%s\N{DEGREE SIGN}' "F" %hourly[3])
 
 #print(hr)
 
-#To fix winds find a way to grab wind and cloud conditions only at the 18 and 06 hours
