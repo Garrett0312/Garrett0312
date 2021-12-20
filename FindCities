@@ -1,0 +1,19 @@
+import requests
+from bs4 import BeautifulSoup
+import tkinter as tk
+
+
+URL = ('https://forecast.weather.gov/product.php?issuedby=DVN&product=PFM&site=dvn')
+
+page = requests.get(URL)
+soup = BeautifulSoup(page.content, 'html.parser')
+data = str(soup)
+data = (data[(data.find('<!-- // CONTENT STARTS HERE -->')):(data.find('<!-- // CONTENT ENDS HERE -->'))])
+print(data)
+
+
+state = (data[(data.find('$$'))+2:(data.find('$$'))+5])
+
+
+print(state)
+
