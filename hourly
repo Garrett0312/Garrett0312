@@ -1,0 +1,71 @@
+
+hr = [21, 0, 3, 6, 9, 12, 15, 18, 21, 0, 3, 6, 9, 12, 15, 18, 21, 0, 3, 6]
+ampm = []
+
+for y in hr:
+    if y == 0:
+        ampm.append('AM')
+    elif y < 12:
+        ampm.append('AM')
+    else:
+        ampm.append('PM')
+
+for x in range(len(hr)):
+    if hr[x] == 0:
+         hr[x] = 12
+    if hr[x] <= 12:
+        hr[x]=hr[x]
+    else:
+        hr[x]=hr[x]-12
+
+
+timecorrect = [None]*(len(hr)+len(ampm))
+timecorrect[::2] = hr
+timecorrect[1::2] = ampm
+
+tc1 = (str(timecorrect[0]))+(str(timecorrect[1]))
+tc2 = (str(timecorrect[2]))+(str(timecorrect[3]))
+tc3 = (str(timecorrect[4]))+(str(timecorrect[5]))
+
+print(tc1,tc2,tc3)
+
+
+
+
+cloudshort = ['FW', 'CL', 'CL', 'FW', 'FW', 'FW', 'FW', 'FW', 'FW', 'FW', 'CL', 'FW', 'FW', 'SC', 'SC', 'FW', 'FW', 'FW', 'CL', 'CL']
+cloud = []
+
+for i in range(len(cloudshort)):
+    if i == 'CL':
+        if hr in range(0,6):
+            cloud.append('Clear')
+        elif hr in range(15,25):
+            cloud.append('Clear')
+        else:
+            cloud.append('Sunny')
+    elif i == 'FW':
+        if hr in range(0,6):
+            cloud.append('Mostly Clear')
+        elif hr in range(15,25):
+            cloud.append('Mostly Clear')
+        else:
+            cloud.append('Mostly Sunny')
+    elif i == 'SC':
+        cloud.append('Partly Cloudy')
+    elif i == 'B1':
+        if hr in range(0,6):
+            cloud.append('Partly Clear')
+        elif hr in range(15,25):
+            cloud.append('Partly Clear')
+        else:
+            cloud.append('Partly Sunny')
+    elif i == 'B2':
+        cloud.append('Mostly Cloudy')
+    elif i == 'OV':
+        cloud.append('Cloudy')
+print(cloud)
+
+cloud1 = cloud[0]
+cloud2 = cloud[1]
+cloud3 = cloud[2]
+print(cloud1,cloud2,cloud3)
