@@ -132,74 +132,37 @@ else:
 #print(timeline)
 timeline12 = timeline+4
 timenow12 = timenow[timeline12]
-#print(timeline12)
+print(timenow12)
 
 #TimeCorrection
-hr1 = timenow[1]
-hr2 = timenow[2]
-hr3 = timenow[3]
 
-for i in timenow:
-#    hr1 = (timenow[1], hrap)
-#    hr2 = (timenow[2], hrap)
-#    hr3 = (timenow[3], hrap)
-    
-    if i == 0:
-        i = i+12
-        hrap = 'AM'
-        #print(hr1,hr2,hr3)
-    if i in range(1,13):
-        i = i
-        hrap = 'AM'
-        #print(hr1,hr2,hr3)
-    if i in range(15,22):
-        i = i-12
-        hrap = 'PM'
-       #print(hr1,hr2,hr3)
-    hr1 = (timenow[1], i)
-    hr2 = (timenow[2], i)
-    hr3 = (timenow[3], i)
-    break
-print(hr1)
-print(hr2)
-print(hr3)
+ampm = []
 
-#if hr1 < 12:
-#    hrap1 = 'AM'
-#else:
-#    hrap1 = 'PM'
-#if hr2 < 12:
-#    hrap2 = 'AM'
-#else:
-#    hrap2 = 'PM'
-#if hr3 < 12:
-#    hrap3 = 'AM'
-#else:
-#    hrap3 = 'PM'
+for y in timenow:
+    if y == 0:
+        ampm.append('AM')
+    elif y < 12:
+        ampm.append('AM')
+    else:
+        ampm.append('PM')
 
-#print(hr1, hrap1)
-#print(hr2, hrap2)
-#print(hr3, hrap3)
+for x in range(len(timenow)):
+    if timenow[x] == 0:
+         timenow[x] = 12
+    if timenow[x] <= 12:
+        timenow[x]=timenow[x]
+    else:
+        timenow[x]=timenow[x]-12
 
-#i = 0
-#for i in timenow:
-#    if i == 0:
-#        tcorrect = i+12
-#    if i == 3:
-#        tcorrect = i
-#    if i == 6:
-#        tcorrect = i
-#    if i == 9:
-#        tcorrect = i
-#    if i == 12:
-#        tcorrect = i
-#    if i == 15:
-#        tcorrect = i-12
-#    if i == 18:
-#        tcorrect = i-12
-#    if i == 21:
-#        tcorrect = i-12
-#    break
+timecorrect = [None]*(len(timenow)+len(ampm))
+timecorrect[::2] = timenow
+timecorrect[1::2] = ampm
+
+tc1 = (str(timecorrect[0]))+(str(timecorrect[1]))
+tc2 = (str(timecorrect[2]))+(str(timecorrect[3]))
+tc3 = (str(timecorrect[4]))+(str(timecorrect[5]))
+
+print(tc1,tc2,tc3)
 
 
 #State Find
@@ -234,6 +197,7 @@ cloudgrab = (txt[txt.find('Clouds'):txt.find('PoP 12hr')]).split()
 cloud = cloudgrab[1:]
 cloud1 = cloud[timeline]
 cloud2 = cloud[timeline12]
+print (hr)
 
 
 if cloud1 == 'CL':
@@ -298,12 +262,11 @@ elif cloud2 == 'OV':
 pop = (txt[(txt.find('PoP 12hr')):(txt.find('QPF 12hr'))]).split()
 
 
-
 #Temps 3 hours
 hourlygrab = (txt[(txt.find('Temp')):(txt.find('Dewpt'))]).split()
 hourly = hourlygrab[1:]
 #print(hourly)
-
+print(timeline12)
 #Print the Forcast
 print("Area forecast for",'%s'","%City, statefind)
 print("Forecasting Office:",WFO.upper())
@@ -324,8 +287,7 @@ print("Chance of precip:",'%s%%' %pop[3])
 print("")
 print("Here are the conditions for the next 3 hours:")
 print("")
+print(tc1,tc2,tc3)
+print(cloud[0],cloud[1],cloud[2])
 print('%s\N{DEGREE SIGN}' "F" %hourly[1],'%s\N{DEGREE SIGN}' "F" %hourly[2],
       '%s\N{DEGREE SIGN}' "F" %hourly[3])
-
-#print(hr)
-
