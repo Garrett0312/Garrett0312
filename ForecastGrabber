@@ -8,19 +8,27 @@ popup = tk.Tk()
 popup.withdraw()
 popup.lift()
 
-WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'list'" to see the list)\t\t")
+WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'list'" to see the list of WFOs)")
 
 if WFO == "list":
-    with open('C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv', newline='') as f:
+    with open('C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv', newline='') as f:
         reader = csv.reader(f)
-        data = list(reader)
-        data = data[1:]
+        csvdata = list(reader)
+        csvdata = csvdata[1:]
 
-    for i in data:
+    for i in csvdata:
         print(i)
     print("")
     print("")
+    WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'search'" to search the list)")
+if WFO == "search":
+    search = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the state to narrow WFO list\t\t\t\t\t\t")
+    search = search.title()
+    matching = [s for s in csvdata if search in s]
+    print(matching)
     WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
+print("")
+print("")
 
 
 URL = ('https://forecast.weather.gov/product.php?issuedby='+WFO+'&product=PFM&site='+WFO)
@@ -65,7 +73,7 @@ while True:
 start = newdata.find(City)
 end = newdata.find('$',start+1)
 txt = newdata[start:end]
-print(txt)
+#print(txt)
 
 #TimeCheck
 times = (txt[(txt.find('3hrly')):(txt.find('UTC'))]).split()
@@ -104,7 +112,7 @@ for x in range(len(time)):
 #Hourly to 12 hour time
 hr = (txt[(txt.find('ft'))+2:(txt.find('ft'))+6])
 #print(hr)
-apm = txt[txt.find('ft')+7:txt.find('ft')+9]
+apm = txt[txt.find('ft')+8:txt.find('ft')+10]
 hr = round(int(hr),)
 #print (hr, apm)
 h = int(str(hr)[-2:])
@@ -309,6 +317,3 @@ print("At",tc2,"it will be",'%s\N{DEGREE SIGN}' "F" %hourlyT[2],
       "with",clouds[2],"skies,",winddir[2],"winds at",windspd[2],"MPH")
 print("At",tc3,"it will be",'%s\N{DEGREE SIGN}' "F" %hourlyT[3],
       "with",clouds[3],"skies,",winddir[3],"winds at",windspd[3],"MPH")
-
-
-#print(hr)
