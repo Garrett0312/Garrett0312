@@ -11,7 +11,7 @@ popup.lift()
 WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'list'" to see the list)\t\t")
 
 if WFO == "list":
-    with open('C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv', newline='') as f:
+    with open('C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv', newline='') as f:
         reader = csv.reader(f)
         data = list(reader)
         data = data[1:]
@@ -32,21 +32,24 @@ data = str(soup)
 City = tk.simpledialog.askstring("Local Forecast City", "Enter a city for the forecast for the area. (Type "'list'" to see the list of cities)")
 City = City.title()
 
-newdata = data[data.find('<pre class="glossaryProduct">'):data.find('</pre>')]
+content = data[data.find('<!-- // CONTENT STARTS HERE -->'):data.find('</pre>')]
+pfms = content.find('Point Forecast Matrices')
+newdata = content[content.find('Point Forecast Matrices',pfms+1):]
 datalst = newdata[newdata.find('Z')-2:]
 loclist = (datalst.split('$$'))
 
 if City =="List":
     s='-'
+    z='Z'
     print(len(loclist),"cities found")
     for i in range(len(loclist)):
-        state = (s.join(loclist[i].split(s)[:-2])[1:3])
+        state = (z.join(loclist[i].split(z)[-2:-1])[1:4])
         if i == 0:
-            state = (s.join(loclist[i].split(s)[:-3])[0:2])
+            state = (z.join(loclist[i].split(z)[:-1])[:2])
         cities = (s.join(loclist[i].split(s)[2:3]))
         print(cities,state)
-        print("")
-        print("")
+    print("")
+    print("")
     City = tk.simpledialog.askstring("Local Forecast City", "Enter a city for the forecast for the area. \t\t\t\t\t\t\t")
     City = City.title()
 
@@ -59,56 +62,51 @@ while True:
 
 
 
-start = data.find(City)
-end = data.find('$',start+1)
-txt = data[start:end]
+start = newdata.find(City)
+end = newdata.find('$',start+1)
+txt = newdata[start:end]
 print(txt)
 
 #TimeCheck
 times = (txt[(txt.find('3hrly')):(txt.find('UTC'))]).split()
 time = list(map(int,(times[2:len(times)])))
-utctime = txt[txt.find('UTC 3hrly'):txt.find('Temp')]
 
-utct = (utctime[utctime.find('UTC 3hrly'):utctime.find('M')]).split()
-utc = list(map(int,(utct[2:len(utct)])))
-print(utc)
-print(time)
+tz = str(txt[(txt.find('3hrly')-4):(txt.find('3hrly')-1)])
 
-tz = (txt[(txt.find('3hrly')-5):(txt.find('3hrly')-1)])
-print(tz)
-
-for x in range(len(utc)):
+#print(tz)
+for x in range(len(time)):
     if tz == 'EST':
-        time[x] = utc[x]-5
+        time[x] = time[x]-1
     elif tz =='CST':
-        time[x]=(utc[x]-6)
+        time[x]=(time[x])
     elif tz =='MST':
-        time[x]=(utc[x]-7)
+        time[x]=(time[x]+1)
     elif tz =='PST':
-        time[x]=(utc[x]-8)
+        time[x]=(time[x]+2)
     elif tz =='AKST':
-        time[x]=(utc[x]-9)
+        time[x]=(time[x]+3)
     elif tz =='HAST':
-        time[x]=(utc[x]-10)
+        time[x]=(time[x]+4)
     elif tz == 'EDT':
-        time[x]=(utc[x]-4)
+        time[x]=(time[x]-2)
     elif tz =='CDT':
-        time[x]=(utc[x]-5)
+        time[x]=(time[x]-1)
     elif tz =='MDT':
-        time[x]=(utc[x]-6)
+        time[x]=(time[x])
     elif tz =='PDT':
-        time[x]=(utc[x]-7)
+        time[x]=(time[x]+1)
     elif tz =='AKDT':
-        time[x]=(utc[x]-8)
+        time[x]=(time[x]+2)
     if tz =='HADT':
-        time[x]=(utc[x]-9)
-print(time)
+        time[x]=(time[x]+3)
+#print(time)
 
 #Hourly to 12 hour time
-hr = (txt[(txt.find('ft'))+2:(txt.find('ST'))-4])
-apm = txt[txt.find('ST')-3:txt.find('ST')-1]
+hr = (txt[(txt.find('ft'))+2:(txt.find('ft'))+6])
+#print(hr)
+apm = txt[txt.find('ft')+7:txt.find('ft')+9]
 hr = round(int(hr),)
-
+#print (hr, apm)
 h = int(str(hr)[-2:])
 
 if h > 30:
@@ -136,6 +134,7 @@ else:
     else:
         hr = hr
         hour = hr
+#print(hr)
 
 if hr in range(1,4):
     hround = 3
@@ -160,7 +159,7 @@ if hround in range(0,6):
     tod2 = "Tomorrow"
     hl1 = "low"
     hl2 = "high"
-elif hround in range(18,25):
+elif hround in range(15,25):
     tod1 = "Tonight"
     tod2 = "Tomorrow"
     hl1 = 'low'
@@ -179,7 +178,7 @@ timenow = time[timenowcut:]
 
 if hround in range (0,6):
     timeline = timenow.index(6,0,len(timenow))
-elif hround in range(17,25):
+elif hround in range(15,25):
     timeline = timenow.index(6,0,len(timenow))
 else:
     timeline = timenow.index(18,0,len(timenow))
