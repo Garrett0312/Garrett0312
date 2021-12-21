@@ -1,60 +1,118 @@
 import requests
-import calendar
-import math
 from bs4 import BeautifulSoup
-from datetime import datetime
-from sys import exit
 import tkinter as tk
-import re
+import csv
 
 
-#popup = tk.Tk()
-#popup.withdraw()
-#popup.lift()
+popup = tk.Tk()
+popup.withdraw()
+popup.lift()
 
-#WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
-#City = tk.simpledialog.askstring("Local Forecast City", "Enter a city for the forecast for the area. \t\t\t\t\t\t\t")
-#City = City.capitalize()
-WFO = 'dvn'
-City = 'Davenport'
-#URL = ('https://forecast.weather.gov/product.php?issuedby='+WFO+'&product=PFM&site='+WFO)
-URL = ('https://forecast.weather.gov/product.php?issuedby=DVN&product=PFM&site=dvn')
-#Past Version
-#URL = ('https://forecast.weather.gov/product.php?site=DVN&issuedby=DVN&product=PFM&format=CI&version=2&glossary=0')
+WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'list'" to see the list)\t\t")
+
+if WFO == "list":
+    with open('C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv', newline='') as f:
+        reader = csv.reader(f)
+        data = list(reader)
+        data = data[1:]
+
+    for i in data:
+        print(i)
+    print("")
+    print("")
+    WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
+
+
+URL = ('https://forecast.weather.gov/product.php?issuedby='+WFO+'&product=PFM&site='+WFO)
 
 page = requests.get(URL)
 soup = BeautifulSoup(page.content, 'html.parser')
 data = str(soup)
-#WFO = str(WFO.upper())
 
-#while True:
-#    if City not in data:
-#        print("That location is not in the list, use the major city in your county")
-#        City = tk.simpledialog.askstring("Location not in list", "Please use a major city in your county\t\t\t\t\t\t\t")
-#        City = City.capitalize()
-#    else:
-#        break
+City = tk.simpledialog.askstring("Local Forecast City", "Enter a city for the forecast for the area. (Type "'list'" to see the list of cities)")
+City = City.title()
+
+newdata = data[data.find('<pre class="glossaryProduct">'):data.find('</pre>')]
+datalst = newdata[newdata.find('Z')-2:]
+loclist = (datalst.split('$$'))
+
+if City =="List":
+    s='-'
+    print(len(loclist),"cities found")
+    for i in range(len(loclist)):
+        state = (s.join(loclist[i].split(s)[:-2])[1:3])
+        if i == 0:
+            state = (s.join(loclist[i].split(s)[:-3])[0:2])
+        cities = (s.join(loclist[i].split(s)[2:3]))
+        print(cities,state)
+        print("")
+        print("")
+    City = tk.simpledialog.askstring("Local Forecast City", "Enter a city for the forecast for the area. \t\t\t\t\t\t\t")
+    City = City.title()
+
+while True:
+    if City not in data:
+        City = tk.simpledialog.askstring("Location not in list", "Please use a major city in your county\t\t\t\t\t\t\t")
+        City = City.title()
+    else:
+        break
+
+
+
 start = data.find(City)
 end = data.find('$',start+1)
 txt = data[start:end]
 print(txt)
 
 #TimeCheck
-times = (txt[(txt.find('CST 3hrly')):(txt.find('UTC'))]).split()
+times = (txt[(txt.find('3hrly')):(txt.find('UTC'))]).split()
 time = list(map(int,(times[2:len(times)])))
-#print(time)
+utctime = txt[txt.find('UTC 3hrly'):txt.find('Temp')]
 
+utct = (utctime[utctime.find('UTC 3hrly'):utctime.find('M')]).split()
+utc = list(map(int,(utct[2:len(utct)])))
+print(utc)
+print(time)
+
+tz = (txt[(txt.find('3hrly')-5):(txt.find('3hrly')-1)])
+print(tz)
+
+for x in range(len(utc)):
+    if tz == 'EST':
+        time[x] = utc[x]-5
+    elif tz =='CST':
+        time[x]=(utc[x]-6)
+    elif tz =='MST':
+        time[x]=(utc[x]-7)
+    elif tz =='PST':
+        time[x]=(utc[x]-8)
+    elif tz =='AKST':
+        time[x]=(utc[x]-9)
+    elif tz =='HAST':
+        time[x]=(utc[x]-10)
+    elif tz == 'EDT':
+        time[x]=(utc[x]-4)
+    elif tz =='CDT':
+        time[x]=(utc[x]-5)
+    elif tz =='MDT':
+        time[x]=(utc[x]-6)
+    elif tz =='PDT':
+        time[x]=(utc[x]-7)
+    elif tz =='AKDT':
+        time[x]=(utc[x]-8)
+    if tz =='HADT':
+        time[x]=(utc[x]-9)
+print(time)
 
 #Hourly to 12 hour time
-hr = (txt[(txt.find('ft'))+2:(txt.find('CST'))-4])
-apm = txt[txt.find('CST')-3:txt.find('CST')-1]
+hr = (txt[(txt.find('ft'))+2:(txt.find('ST'))-4])
+apm = txt[txt.find('ST')-3:txt.find('ST')-1]
 hr = round(int(hr),)
-#print (hr)
+
 h = int(str(hr)[-2:])
-#print(h)
+
 if h > 30:
-    hr = round((hr/100)+1,)
-#    print(hr)
+    hr = round((hr/100),)
 else:
     hr = round(hr/100,)
 #print (hr)
@@ -78,7 +136,6 @@ else:
     else:
         hr = hr
         hour = hr
-#print(hr)
 
 if hr in range(1,4):
     hround = 3
@@ -98,88 +155,55 @@ if hr in range(22,25):
     hround = 0
 #print(hround)
 
-if (hround in range(0,6)):
+if hround in range(0,6):
     tod1 = "Tonight"
     tod2 = "Tomorrow"
     hl1 = "low"
     hl2 = "high"
-    #print("True")
-elif hround in range(15,25):
+elif hround in range(18,25):
     tod1 = "Tonight"
     tod2 = "Tomorrow"
     hl1 = 'low'
     hl2 = 'high'
-    #print ("True")
 else:
-    #print("False")
     tod1 = "Today"
     tod2 = "Tonight"
     hl1 = "high"
     hl2 = 'low'
-#print(time)
 
 
+#print(hround)
 timenowcut = time.index(hround)
-timenow = (time[timenowcut:])
-print (timenow)
+timenow = time[timenowcut:]
+#print (timenow)
 
 if hround in range (0,6):
     timeline = timenow.index(6,0,len(timenow))
-elif hround in range(15,25):
+elif hround in range(17,25):
     timeline = timenow.index(6,0,len(timenow))
 else:
     timeline = timenow.index(18,0,len(timenow))
 #print(timeline)
 timeline12 = timeline+4
-timenow12 = timenow[timeline12]
-print(timenow12)
+#print(timeline12)
 
-#TimeCorrection
-
-ampm = []
-
-for y in timenow:
-    if y == 0:
-        ampm.append('AM')
-    elif y < 12:
-        ampm.append('AM')
-    else:
-        ampm.append('PM')
-
-for x in range(len(timenow)):
-    if timenow[x] == 0:
-         timenow[x] = 12
-    if timenow[x] <= 12:
-        timenow[x]=timenow[x]
-    else:
-        timenow[x]=timenow[x]-12
-
-timecorrect = [None]*(len(timenow)+len(ampm))
-timecorrect[::2] = timenow
-timecorrect[1::2] = ampm
-
-tc1 = (str(timecorrect[0]))+(str(timecorrect[1]))
-tc2 = (str(timecorrect[2]))+(str(timecorrect[3]))
-tc3 = (str(timecorrect[4]))+(str(timecorrect[5]))
-
-print(tc1,tc2,tc3)
 
 
 #State Find
 statefind = (txt[(txt.find('Elev.'))-18:(txt.find('Elev.'))-16])
-#print(statefind)
+
 
 #Max/Min Temps
 txtshort = (txt[txt.find(City):txt.find('Temp')])
-#print(txtshort)
+
 
 minmax=''
 if "Min/Max" in txtshort:
     minmax = (txtshort[txtshort.find('Min/Max'):txtshort.find('Temp')]).split()
-    #print("Min Max")
+
 if "Max/Min" in txtshort:
     minmax = (txtshort[txtshort.find('Max/Min'):txtshort.find('Temp')]).split()
-    #print("Max Min")
+
 
 txn1 = int(minmax[1])
 txn2 = int(minmax[2])
@@ -189,84 +213,78 @@ windd = (txt[(txt.find('Wind dir')):txt.find('Wind spd')]).split()
 winddir = windd[2:]
 winds = (txt[txt.find('Wind spd'):txt.find('Clouds')]).split()
 windspd = winds[2:]
-#print(winddir)
-#print(windspd)
+
 
 #Cloud Cover
-cloudgrab = (txt[txt.find('Clouds'):txt.find('PoP 12hr')]).split()
-cloud = cloudgrab[1:]
-cloud1 = cloud[timeline]
-cloud2 = cloud[timeline12]
-print (hr)
+cl = (txt[(txt.find('Clouds')):txt.find('PoP 12hr')]).split()
+cloud = cl[1:]
 
 
-if cloud1 == 'CL':
-    if hr in range(0,6):
-        cloud1 = 'Clear'
-    elif hr in range(15,25):
-        cloud1 = 'Clear'
-    else:
-        cloud1 = 'Sunny'
-elif cloud1 == 'FW':
-    if hr in range(0,6):
-        cloud1 = 'Mostly Clear'
-    elif hr in range(15,25):
-        cloud1 = 'Mostly Clear'
-    else:
-        cloud1 = 'Mostly Sunny'
-elif cloud1 == 'SC':
-    cloud1 = "Partly Cloudy"
-elif cloud1 == 'B1':
-    if hr in range(0,6):
-        cloud1 = 'Partly Clear'
-    elif hr in range(15,25):
-        cloud1 = 'Partly Clear'
-    else:
-        cloud1 = 'Partly Sunny'
-elif cloud1 == 'B2':
-    cloud1 = "Mostly Cloudy"
-elif cloud1 == 'OV':
-    cloud1 = 'Cloudy'
+clouds = []
 
-if cloud2 == 'CL':
-    if timenow12 in range(0,6):
-        cloud2 = 'Clear'
-    elif timenow12 in range(15,25):
-        cloud2 = 'Clear'
-    else:
-        cloud2 = 'Sunny'
-elif cloud2 == 'FW':
-    if timenow12 in range(0,6):
-        cloud2 = 'Mostly Clear'
-    elif timenow12 in range(15,25):
-        cloud2 = 'Mostly Clear'
-    else:
-        cloud2 = 'Mostly Sunny'
-elif cloud2 == 'SC':
-    cloud2 = "Partly Cloudy"
-elif cloud2 == 'B1':
-    if timenow12 in range(0,6):
-        cloud2 = 'Partly Clear'
-    elif timenow12 in range(15,25):
-        cloud2 = 'Partly Clear'
-    else:
-        cloud2 = 'Partly Sunny'
-elif cloud2 == 'B2':
-    cloud2 = "Mostly Cloudy"
-elif cloud2 == 'OV':
-    cloud2 = 'Cloudy'
-
+for i in range(len(cloud)):
+    if cloud[i] == 'CL' and hround in range(0,6):
+        clouds.append('Clear')
+    elif cloud[i] == 'CL' and hround in range(12,25):
+        clouds.append('Clear')
+    elif cloud[i] == 'CL':
+        clouds.append('Sunny')
+    elif cloud[i] == 'FW' and hround in range(0,6):
+        clouds.append('Mostly Clear')
+    elif cloud[i] == 'FW' and hround in range(15,25):
+        clouds.append('Mostly Clear')
+    elif cloud[i] == 'FW':
+        clouds.append('Mostly Sunny')
+    elif cloud[i] == 'SC':
+        clouds.append('Partly Cloudy')
+    elif cloud[i] == 'B1' and hround in range(0,6):
+        clouds.append('Partly Clear')
+    elif cloud[i] == 'B1' and hround in range(15,25):
+        clouds.append('Partly Clear')
+    elif cloud[i] == 'B1':
+        clouds.append('Partly Sunny')
+    elif cloud[i] == 'B2':
+        clouds.append('Mostly Cloudy')
+    elif cloud[i] == 'OV':
+        clouds.append('Cloudy')
+#print(clouds)
 
 
 #Chance of rain
 pop = (txt[(txt.find('PoP 12hr')):(txt.find('QPF 12hr'))]).split()
 
+#3 Hour Time Correction
+ampm=[]
+hrc=timenow
+
+for y in timenow:
+    if y == 0:
+        ampm.append('AM')
+    elif y < 12:
+        ampm.append('AM')
+    else:
+        ampm.append('PM')
+#print(ampm)
+for x in range(len(timenow)):
+    if timenow[x] == 0:
+         hrc[x]=12
+    if timenow[x] <= 12:
+        hrc[x]=timenow[x]
+    else:
+        hrc[x]=timenow[x]-12
+
+timecorrect = [None]*(len(hrc)+len(ampm))
+timecorrect[::2] = hrc
+timecorrect[1::2] = ampm
+
+tc1 = (str(timecorrect[0]))+(str(timecorrect[1]))
+tc2 = (str(timecorrect[2]))+(str(timecorrect[3]))
+tc3 = (str(timecorrect[4]))+(str(timecorrect[5]))
 
 #Temps 3 hours
-hourlygrab = (txt[(txt.find('Temp')):(txt.find('Dewpt'))]).split()
-hourly = hourlygrab[1:]
-#print(hourly)
-print(timeline12)
+hourlyT = (txt[(txt.find('Temp')):(txt.find('Dewpt'))]).split()
+
+
 #Print the Forcast
 print("Area forecast for",'%s'","%City, statefind)
 print("Forecasting Office:",WFO.upper())
@@ -274,20 +292,24 @@ print("Updated at", hour, apm)
 print("")
 
 print("Forecast for",'%s'":"%tod1)
-print(cloud1,"Skies")
+print(clouds[timeline],"Skies")
 print("with a", hl1, "of",'%d\N{DEGREE SIGN}' "F" %txn1)
 print("Winds",winddir[timeline],"at",windspd[timeline],"MPH")
 print("Chance of precip:",'%s%%' %pop[2])
 print("")
 print('%s'":"%tod2)
-print(cloud2,"Skies")
+print(clouds[timeline12],"Skies")
 print("with a", hl2,"of",'%d\N{DEGREE SIGN}' "F" %txn2)
 print("Winds",winddir[timeline12],"at", windspd[timeline12], "MPH")
 print("Chance of precip:",'%s%%' %pop[3])
 print("")
 print("Here are the conditions for the next 3 hours:")
-print("")
-print(tc1,tc2,tc3)
-print(cloud[0],cloud[1],cloud[2])
-print('%s\N{DEGREE SIGN}' "F" %hourly[1],'%s\N{DEGREE SIGN}' "F" %hourly[2],
-      '%s\N{DEGREE SIGN}' "F" %hourly[3])
+print("At",tc1,"it will be",'%s\N{DEGREE SIGN}' "F" %hourlyT[1],
+      "with",clouds[1],"skies,",winddir[1],"winds at",windspd[1],"MPH")
+print("At",tc2,"it will be",'%s\N{DEGREE SIGN}' "F" %hourlyT[2],
+      "with",clouds[2],"skies,",winddir[2],"winds at",windspd[2],"MPH")
+print("At",tc3,"it will be",'%s\N{DEGREE SIGN}' "F" %hourlyT[3],
+      "with",clouds[3],"skies,",winddir[3],"winds at",windspd[3],"MPH")
+
+
+#print(hr)
