@@ -73,7 +73,7 @@ while True:
 start = newdata.find(City)
 end = newdata.find('$',start+1)
 txt = newdata[start:end]
-#print(txt)
+
 
 #TimeCheck
 times = (txt[(txt.find('3hrly')):(txt.find('UTC'))]).split()
@@ -81,7 +81,7 @@ time = list(map(int,(times[2:len(times)])))
 
 tz = str(txt[(txt.find('3hrly')-4):(txt.find('3hrly')-1)])
 
-#print(tz)
+
 for x in range(len(time)):
     if tz == 'EST':
         time[x] = time[x]-1
@@ -107,21 +107,21 @@ for x in range(len(time)):
         time[x]=(time[x]+2)
     if tz =='HADT':
         time[x]=(time[x]+3)
-#print(time)
+
 
 #Hourly to 12 hour time
 hr = (txt[(txt.find('ft'))+2:(txt.find('ft'))+6])
 #print(hr)
 apm = txt[txt.find('ft')+8:txt.find('ft')+10]
 hr = round(int(hr),)
-#print (hr, apm)
+
 h = int(str(hr)[-2:])
 
 if h > 30:
     hr = round((hr/100),)
 else:
     hr = round(hr/100,)
-#print (hr)
+
 
 if apm == 'PM':
     if hr == 12:
@@ -142,7 +142,7 @@ else:
     else:
         hr = hr
         hour = hr
-#print(hr)
+
 
 if hr in range(1,4):
     hround = 3
@@ -160,7 +160,7 @@ if hr in range(19,22):
     hround = 21
 if hr in range(22,25):
     hround = 0
-#print(hround)
+
 
 if hround in range(0,6):
     tod1 = "Tonight"
@@ -179,10 +179,10 @@ else:
     hl2 = 'low'
 
 
-#print(hround)
+
 timenowcut = time.index(hround)
 timenow = time[timenowcut:]
-#print (timenow)
+
 
 if hround in range (0,6):
     timeline = timenow.index(6,0,len(timenow))
@@ -190,9 +190,8 @@ elif hround in range(15,25):
     timeline = timenow.index(6,0,len(timenow))
 else:
     timeline = timenow.index(18,0,len(timenow))
-#print(timeline)
+
 timeline12 = timeline+4
-#print(timeline12)
 
 
 
@@ -254,7 +253,7 @@ for i in range(len(cloud)):
         clouds.append('Mostly Cloudy')
     elif cloud[i] == 'OV':
         clouds.append('Cloudy')
-#print(clouds)
+
 
 
 #Chance of rain
@@ -271,7 +270,7 @@ for y in timenow:
         ampm.append('AM')
     else:
         ampm.append('PM')
-#print(ampm)
+
 for x in range(len(timenow)):
     if timenow[x] == 0:
          hrc[x]=12
