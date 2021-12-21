@@ -1,0 +1,57 @@
+from bs4 import BeautifulSoup
+import requests
+#URL = ('https://forecast.weather.gov/product.php?issuedby=DVN&product=PFM&site=dvn')
+URL = ('https://forecast.weather.gov/product.php?site=NWS&issuedby=DVN&product=PFM&format=CI&version=4&glossary=0')
+
+City = 'Davenport'
+
+page = requests.get(URL)
+soup = BeautifulSoup(page.content, 'html.parser')
+data = str(soup)
+
+content = data[data.find('<!-- // CONTENT STARTS HERE -->'):data.find('</pre>')]
+pfms = content.find('Point Forecast Matrices')
+newdata = content[content.find('Point Forecast Matrices',pfms+1):]
+datalst = newdata[newdata.find('Z')-2:]
+loclist = (datalst.split('$$'))
+
+start = newdata.find(City)
+end = newdata.find('$',start+1)
+txt = newdata[start:end]
+print(txt)
+
+hr = (txt[(txt.find('ft'))+2:(txt.find('T'))-6])
+print(hr)
+txtapm = txt[txt.find('ft'):txt.find('Date')]
+apm = txtapm[txtapm.find('T')-5:txtapm.find('T')-3]
+hr = round(int(hr),)
+print(hr)
+h = int(str(hr)[-2:])
+print(h>30)
+if h > 30:
+    hr = round((hr/100)+1,)
+else:
+    hr = round(hr/100,)
+print(hr)
+
+if apm == 'PM':
+    if hr == 12:
+        hr = hr
+        hour = hr
+    else:
+        hr = hr+12
+        hour = hr-12
+else:
+    if hr == 12:
+        hr = hr
+        hour = 12
+        apm = 'PM'
+        hround = 12
+    elif hr == 13:
+        hr = 1
+        hour = hr
+    else:
+        hr = hr
+        hour = hr
+
+print("Updated at", hour, apm)
