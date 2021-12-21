@@ -8,7 +8,8 @@ popup = tk.Tk()
 popup.withdraw()
 popup.lift()
 
-WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'list'" to see the list of WFOs)")
+WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office."
+                                " (Type [Search] for list of WFOs by state, or [list] for all WFOs)")
 
 if WFO == "list":
     with open('C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv', newline='') as f:
@@ -73,7 +74,7 @@ while True:
 start = newdata.find(City)
 end = newdata.find('$',start+1)
 txt = newdata[start:end]
-
+print(txt)
 
 #TimeCheck
 times = (txt[(txt.find('3hrly')):(txt.find('UTC'))]).split()
@@ -110,18 +111,16 @@ for x in range(len(time)):
 
 
 #Hourly to 12 hour time
-hr = (txt[(txt.find('ft'))+2:(txt.find('ft'))+6])
-#print(hr)
-apm = txt[txt.find('ft')+8:txt.find('ft')+10]
+hr = (txt[(txt.find('ft'))+2:(txt.find('T'))-6])
+txtapm = txt[txt.find('ft'):txt.find('Date')]
+apm = txtapm[txtapm.find('T')-5:txtapm.find('T')-3]
 hr = round(int(hr),)
-
 h = int(str(hr)[-2:])
 
 if h > 30:
     hr = round((hr/100),)
 else:
     hr = round(hr/100,)
-
 
 if apm == 'PM':
     if hr == 12:
@@ -131,11 +130,10 @@ if apm == 'PM':
         hr = hr+12
         hour = hr-12
 else:
+
     if hr == 12:
-        hr = hr
+        hr = 24
         hour = 12
-        apm = 'PM'
-        hround = 12
     elif hr == 13:
         hr = 1
         hour = hr
@@ -192,7 +190,7 @@ else:
     timeline = timenow.index(18,0,len(timenow))
 
 timeline12 = timeline+4
-
+;o
 
 
 #State Find
@@ -227,7 +225,7 @@ cloud = cl[1:]
 
 
 clouds = []
-
+print(hround)
 for i in range(len(cloud)):
     if cloud[i] == 'CL' and hround in range(0,6):
         clouds.append('Clear')
