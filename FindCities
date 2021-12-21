@@ -8,6 +8,34 @@ URL = ('https://forecast.weather.gov/product.php?issuedby=DVN&product=PFM&site=d
 page = requests.get(URL)
 soup = BeautifulSoup(page.content, 'html.parser')
 data = str(soup)
+
+
+newdata = data[data.find('<pre class="glossaryProduct">'):data.find('</pre>')]
+datalst = newdata[newdata.find('Z')-2:]
+loclist = (datalst.split('$$'))
+
+print(len(loclist),"cities found")
+
+s='-'
+for i in range(len(loclist)):
+    state = (s.join(loclist[i].split(s)[:-3])[1:3])
+    if i == 0:
+        state = (s.join(loclist[i].split(s)[:-3])[0:2])
+    cities = (s.join(loclist[i].split(s)[2:3]))
+    print(cities,state)
+
+
+
+import requests
+from bs4 import BeautifulSoup
+import tkinter as tk
+
+
+URL = ('https://forecast.weather.gov/product.php?issuedby=DVN&product=PFM&site=dvn')
+
+page = requests.get(URL)
+soup = BeautifulSoup(page.content, 'html.parser')
+data = str(soup)
 data = (data[(data.find('<!-- // CONTENT STARTS HERE -->')):(data.find('<!-- // CONTENT ENDS HERE -->'))])
 print(data)
 
@@ -16,4 +44,3 @@ state = (data[(data.find('$$'))+2:(data.find('$$'))+5])
 
 
 print(state)
-
