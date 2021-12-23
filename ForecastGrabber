@@ -9,34 +9,38 @@ popup.withdraw()
 popup.lift()
 
 WFO = (tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office."
-                                " (Type [state] for list of WFOs by state, or [list] for all WFOs)")).title()
+                                " (Enter <state> for list of WFOs by state, or <list> for all WFOs)")).title()
 
 #WFO List on Garrett's Computer = 'C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv'
 #WFO List on Max Computer = 'C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv'
-with open('C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv', newline='') as f:
-    reader = csv.reader(f)
-    csvdata = list(reader)
-    csvdata = csvdata[1:]
-    print ("{:<4}|{:16}{:4}{:16}| {:>10}".format('WFO','','CITY','','STATE'))
-    print("------------------------------------------------------------")
-    for i in csvdata:
-        if WFO in i:
-            print("{:<4}|{:3}{:30}{:3}| {:>10}".format(i[0],'',i[1],'',i[2]))
-            print("------------------------------------------------------------")
-
-
-if WFO =='List':
-    for i in csvdata:
-        print("{:<4}|{:3}{:>30}{:3}| {:>10}".format(i[0],'',i[1],'',i[2]))
+if len(WFO)>3:
+    with open('C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv', newline='') as f:
+        reader = csv.reader(f)
+        csvdata = list(reader)
+        csvdata = csvdata[1:]
+        print ("{:<4}|{:16}{:4}{:16}| {:>10}".format('WFO','','CITY','','STATE'))
         print("------------------------------------------------------------")
+        if WFO != 'List':
+            for i in csvdata:
+                if WFO in i:
+                    print("{:<4}|{:3}{:30}{:3}| {:>10}".format(i[0],'',i[1],'',i[2]))
+                    print("------------------------------------------------------------")
+                    continue
+                    break
+            WFO = (tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")).title()
 
-print("")
-print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-print("")
-f.close()
+        if WFO =='List':
+            for i in csvdata:
+                print("{:<4}|{:3}{:>30}{:3}| {:>10}".format(i[0],'',i[1],'',i[2]))
+                print("------------------------------------------------------------")
+                #continue
+            WFO = (tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")).title()
+    print("")
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    print("")
+    f.close()
 
-
-WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
+#WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
 
 URL = ('https://forecast.weather.gov/product.php?issuedby='+WFO+'&product=PFM&site='+WFO)
 
