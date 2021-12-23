@@ -8,39 +8,35 @@ popup = tk.Tk()
 popup.withdraw()
 popup.lift()
 
-WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office."
-                                " (Type [state] for list of WFOs by state, or [list] for all WFOs)")
+WFO = (tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office."
+                                " (Type [state] for list of WFOs by state, or [list] for all WFOs)")).title()
 
 #WFO List on Garrett's Computer = 'C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv'
 #WFO List on Max Computer = 'C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv'
-if WFO == "list":
-    with open('C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv', newline='') as f:
-        reader = csv.reader(f)
-        csvdata = list(reader)
-        csvdata = csvdata[1:]
-
+with open('C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv', newline='') as f:
+    reader = csv.reader(f)
+    csvdata = list(reader)
+    csvdata = csvdata[1:]
+    print ("{:<4}|{:16}{:4}{:16}| {:>10}".format('WFO','','CITY','','STATE'))
+    print("------------------------------------------------------------")
     for i in csvdata:
-        print(i)
-    print("")
-    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-    print("")
-    WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'state'" to search the list)")
-if WFO == "state":
-    with open('C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv', newline='') as f:
-        reader = csv.reader(f)
-        csvdata = list(reader)
-        csvdata = csvdata[1:]
-        search = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the state to narrow WFO list\t\t\t\t\t\t")
-        search = search.title()
+        if WFO in i:
+            print("{:<4}|{:3}{:30}{:3}| {:>10}".format(i[0],'',i[1],'',i[2]))
+            print("------------------------------------------------------------")
 
-        matching = [s for s in csvdata if search in s]
-        print(*matching, sep = "\n")
-        #print(matching)
-        WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
+
+if WFO =='List':
+    for i in csvdata:
+        print("{:<4}|{:3}{:>30}{:3}| {:>10}".format(i[0],'',i[1],'',i[2]))
+        print("------------------------------------------------------------")
+
 print("")
 print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 print("")
+f.close()
 
+
+WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
 
 URL = ('https://forecast.weather.gov/product.php?issuedby='+WFO+'&product=PFM&site='+WFO)
 
@@ -48,8 +44,6 @@ page = requests.get(URL)
 soup = BeautifulSoup(page.content, 'html.parser')
 data = str(soup)
 
-#City = tk.simpledialog.askstring("Local Forecast City", "Enter a city for the forecast for the area. (Type "'list'" to see the list of cities)")
-#City = City.title()
 
 content = data[data.find('<!-- // CONTENT STARTS HERE -->'):data.find('</pre>')]
 pfms = content.find('Point Forecast Matrices')
@@ -139,8 +133,7 @@ for x in range(len(time)):
 
 
 #Hourly to 12 hour time
-#hrfind
-#hr = (txt[(txt.find('ft'))+2:(txt.find('T'))-6])
+
 txtapm = txt[txt.find('ft'):txt.find('Date')]
 apm = txtapm[txtapm.find('T')-5:txtapm.find('T')-3]
 hr = txtapm[txtapm.find('ft')+2:txtapm.find('T')-6]
@@ -346,13 +339,13 @@ print("")
 print("Forecast for",'%s'":"%tod1)
 print(clouds[timeline],"Skies")
 print("with a", hl1, "of",'%d\N{DEGREE SIGN}' "F" %txn1)
-print("Winds",winddir[timeline],"at",windspd[timeline],"MPH")
+print(winddir[timeline],"at",windspd[timeline],"MPH")
 print("Chance of precip:",'%s%%' %pop[2])
 print("")
 print('%s'":"%tod2)
 print(clouds[timeline12],"Skies")
 print("with a", hl2,"of",'%d\N{DEGREE SIGN}' "F" %txn2)
-print("Winds",winddir[timeline12],"at", windspd[timeline12], "MPH")
+print(winddir[timeline12],"at", windspd[timeline12], "MPH")
 print("Chance of precip:",'%s%%' %pop[3])
 print("")
 print("Here are the conditions for the next 9 hours:")
