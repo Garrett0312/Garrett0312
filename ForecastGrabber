@@ -9,10 +9,12 @@ popup.withdraw()
 popup.lift()
 
 WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office."
-                                " (Type [Search] for list of WFOs by state, or [list] for all WFOs)")
+                                " (Type [state] for list of WFOs by state, or [list] for all WFOs)")
 
+#WFO List on Garrett's Computer = 'C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv'
+#WFO List on Max Computer = 'C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv'
 if WFO == "list":
-    with open('C:\\Users\\gphey\Desktop\Programs\List of all NWS WFOs.csv', newline='') as f:
+    with open('C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv', newline='') as f:
         reader = csv.reader(f)
         csvdata = list(reader)
         csvdata = csvdata[1:]
@@ -20,15 +22,23 @@ if WFO == "list":
     for i in csvdata:
         print(i)
     print("")
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     print("")
-    WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'search'" to search the list)")
-if WFO == "search":
-    search = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the state to narrow WFO list\t\t\t\t\t\t")
-    search = search.title()
-    matching = [s for s in csvdata if search in s]
-    print(matching)
-    WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
+    WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office. (Type "'state'" to search the list)")
+if WFO == "state":
+    with open('C:\\Users\\maxuser\\Desktop\\Max Python Code\\List of all NWS WFOs.csv', newline='') as f:
+        reader = csv.reader(f)
+        csvdata = list(reader)
+        csvdata = csvdata[1:]
+        search = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the state to narrow WFO list\t\t\t\t\t\t")
+        search = search.title()
+
+        matching = [s for s in csvdata if search in s]
+        print(*matching, sep = "\n")
+        #print(matching)
+        WFO = tk.simpledialog.askstring("NWS Weather Forecasting Office","Enter the NWS Weather Forecasting Office.\t\t\t\t\t\t\t")
 print("")
+print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 print("")
 
 
@@ -50,14 +60,22 @@ loclist = (datalst.split('$$'))
 if City =="List":
     s='-'
     z='Z'
-    print(len(loclist),"cities found")
+    tab='\n'
+    print(len(loclist)-1,"cities found")
     for i in range(len(loclist)):
         state = (z.join(loclist[i].split(z)[-2:-1])[1:4])
         if i == 0:
             state = (z.join(loclist[i].split(z)[:-1])[:2])
-        cities = (s.join(loclist[i].split(s)[2:3]))
+        cities = (tab.join(loclist[i].split(s)[2:3]))
+        if i == 0:
+            cities = (s.join(loclist[i].split(s)[2:3]))
+        if 'Elev.' in cities:
+            print("")
+            cities = (tab.join(loclist[i].split(tab)[2:3]))
+            state = ""
         print(cities,state)
     print("")
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     print("")
     City = tk.simpledialog.askstring("Local Forecast City", "Enter a city for the forecast for the area. \t\t\t\t\t\t\t")
     City = City.title()
@@ -74,7 +92,7 @@ while True:
 start = newdata.find(City)
 end = newdata.find('$',start+1)
 txt = newdata[start:end]
-print(txt)
+#print(txt)
 
 #TimeCheck
 times = (txt[(txt.find('3hrly')):(txt.find('UTC'))]).split()
@@ -111,14 +129,16 @@ for x in range(len(time)):
 
 
 #Hourly to 12 hour time
-hr = (txt[(txt.find('ft'))+2:(txt.find('T'))-6])
+#hrfind
+#hr = (txt[(txt.find('ft'))+2:(txt.find('T'))-6])
 txtapm = txt[txt.find('ft'):txt.find('Date')]
 apm = txtapm[txtapm.find('T')-5:txtapm.find('T')-3]
+hr = txtapm[txtapm.find('ft')+2:txtapm.find('T')-6]
 hr = round(int(hr),)
 h = int(str(hr)[-2:])
 
 if h > 30:
-    hr = round((hr/100),)
+    hr = round((hr/100)+1,)
 else:
     hr = round(hr/100,)
 
@@ -190,7 +210,6 @@ else:
     timeline = timenow.index(18,0,len(timenow))
 
 timeline12 = timeline+4
-;o
 
 
 #State Find
@@ -219,13 +238,32 @@ winds = (txt[txt.find('Wind spd'):txt.find('Clouds')]).split()
 windspd = winds[2:]
 
 
+for i in range(len(winddir)):
+    if winddir[i] == 'N':
+        winddir[i] = 'Northerly'
+    elif winddir[i] == 'NE':
+        winddir[i] = 'North Easterly'
+    elif winddir[i] == 'E':
+        winddir[i] = 'Easterly'
+    elif winddir[i] == 'SE':
+        winddir[i] = 'South Easterly'
+    elif winddir[i] == 'S':
+        winddir[i] = 'Southerly'
+    elif winddir[i] == 'SW':
+        winddir[i] = 'South Westerly'
+    elif winddir[i] == 'W':
+        winddir[i] = 'Westerly'
+    if winddir[i] == 'NW':
+        winddir[i] = 'North Westerly'
+#print(winddir)
+
 #Cloud Cover
 cl = (txt[(txt.find('Clouds')):txt.find('PoP 12hr')]).split()
 cloud = cl[1:]
 
 
 clouds = []
-print(hround)
+#print(hround)
 for i in range(len(cloud)):
     if cloud[i] == 'CL' and hround in range(0,6):
         clouds.append('Clear')
@@ -281,9 +319,9 @@ timecorrect = [None]*(len(hrc)+len(ampm))
 timecorrect[::2] = hrc
 timecorrect[1::2] = ampm
 
-tc1 = (str(timecorrect[0]))+(str(timecorrect[1]))
-tc2 = (str(timecorrect[2]))+(str(timecorrect[3]))
-tc3 = (str(timecorrect[4]))+(str(timecorrect[5]))
+tc1 = (str(timecorrect[2]))+(str(timecorrect[3]))
+tc2 = (str(timecorrect[4]))+(str(timecorrect[5]))
+tc3 = (str(timecorrect[6]))+(str(timecorrect[7]))
 
 #Temps 3 hours
 hourlyT = (txt[(txt.find('Temp')):(txt.find('Dewpt'))]).split()
@@ -292,7 +330,7 @@ hourlyT = (txt[(txt.find('Temp')):(txt.find('Dewpt'))]).split()
 #Print the Forcast
 print("Area forecast for",'%s'","%City, statefind)
 print("Forecasting Office:",WFO.upper())
-print("Updated at", hour, apm)
+print("Updated at", hour, apm,"CST")
 print("")
 
 print("Forecast for",'%s'":"%tod1)
@@ -307,10 +345,10 @@ print("with a", hl2,"of",'%d\N{DEGREE SIGN}' "F" %txn2)
 print("Winds",winddir[timeline12],"at", windspd[timeline12], "MPH")
 print("Chance of precip:",'%s%%' %pop[3])
 print("")
-print("Here are the conditions for the next 3 hours:")
+print("Here are the conditions for the next 9 hours:")
 print("At",tc1,"it will be",'%s\N{DEGREE SIGN}' "F" %hourlyT[1],
-      "with",clouds[1],"skies,",winddir[1],"winds at",windspd[1],"MPH")
+      "with",clouds[1],"skies.",winddir[1],"winds at",windspd[1],"MPH")
 print("At",tc2,"it will be",'%s\N{DEGREE SIGN}' "F" %hourlyT[2],
-      "with",clouds[2],"skies,",winddir[2],"winds at",windspd[2],"MPH")
+      "with",clouds[2],"skies.",winddir[2],"winds at",windspd[2],"MPH")
 print("At",tc3,"it will be",'%s\N{DEGREE SIGN}' "F" %hourlyT[3],
-      "with",clouds[3],"skies,",winddir[3],"winds at",windspd[3],"MPH")
+      "with",clouds[3],"skies.",winddir[3],"winds at",windspd[3],"MPH")
