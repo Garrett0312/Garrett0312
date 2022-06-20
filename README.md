@@ -1,7 +1,6 @@
 - 👋 Hi, I’m @Garrett0312
-- 🌩️ I'm a Broadcast Meteorologist at WHBF
+- 🌩️ I'm a Broadcast Meteorologist at KGAN
 - 👀 I’m interested in meteorology, photography, disc golf, coffee, and hockey! 
-- 🌱 I’m currently learning aviation to get my 107 certification and eventually PPL.
 - 📫 How to reach me gpheyd@gmail.com
 
 <!---
